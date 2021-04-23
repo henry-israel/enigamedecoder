@@ -1,7 +1,8 @@
 # enigamedecoder
 Basically just enigame decoding stuff
-
+##########################################################################
 NumberTools:
+######################################################################
   -primeFactors(n) : gets prime factors
  
  -convertfromBaseN(string, base) : Input string of base N, returns string in latin alphabet
@@ -15,9 +16,10 @@ NumberTools:
     -num mode : converts string of integers (separated by spaces) to letters
  
  -changeBase(int, initial_base, new_base) : converts a number from one base to another 
- 
-
+######################################################################################### 
+##########################################################################################
 AlphabetTools:
+#########################################################################################
   -asciiTranslator(string, mode=[ascii, text]_
     -Takes string and converts to:
       -mode=text : converts latin letters to ascii
