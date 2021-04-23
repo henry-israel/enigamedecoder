@@ -303,15 +303,15 @@ class AlphabetTools:
         freq_dict = {key: len(list(group)) for key, group in groupby(array_input)}
         return freq_dict  
     
-    def convertToBraille(input_string, mode="eng"):
+    def convertToBraille(input_string, mode="text"):
         '''
         Converts string<->braille
 
         Parameters
         ----------
         input_string : text string
-        mode : TYPE, braile=from braille; eng=to braille
-            DESCRIPTION. The default is "eng".
+        mode : TYPE, braile=from braille; text=to braille
+            DESCRIPTION. The default is "text".
 
         Returns
         -------
@@ -329,7 +329,7 @@ class AlphabetTools:
         braille = ['⠀','⠮','⠐','⠼','⠫','⠩','⠯','⠄','⠷','⠾','⠡','⠬','⠠','⠤','⠨','⠌','⠴','⠂','⠆','⠒','⠲','⠢',
                     '⠖','⠶','⠦','⠔','⠱','⠰','⠣','⠿','⠜','⠹','⠈','⠁','⠃','⠉','⠙','⠑','⠋','⠛','⠓','⠊','⠚','⠅',
                     '⠇','⠍','⠝','⠕','⠏','⠟','⠗','⠎','⠞','⠥','⠧','⠺','⠭','⠽','⠵','⠪','⠳','⠻','⠘','⠸']
-        if mode=="eng":
+        if mode=="text":
             input_string.lower()
             trans_dict = dict(zip(asciicodes, braille))
         if mode=="braille":
