@@ -91,7 +91,7 @@ class NumberTools:
         translated = ''.join(bin(byte)[0]+bin(byte)[2:]+" " for byte in byte_mode)
         return translated
 
-    def convertToHex(input_text):
+    def converttoHex(input_text):
         '''
         Converts string to hex
 
@@ -107,7 +107,7 @@ class NumberTools:
         translation = ''.join(hex(ord(let))[2:]+" " for let in input_text)
         return translation
 
-    def NumericalTools(input_string, mode='let'):
+    def NumtoLet(input_string, mode='let'):
         '''
         
 
