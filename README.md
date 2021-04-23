@@ -43,4 +43,9 @@ AlphabetTools:
    -convertToKeyBoardPos(input_string, mode=[text, keyboard] : converts to/from alphabet position to position on english keyboard
       -mode = text : converts alphabet location to keyboard location
       -mode = keyboard : converts keyboard location to alphabet location
-     
+##################################################################################################################################
+
+example usage:
+print(AlphabetTools.asciiTranslator("hello", mode="text")
+Out >> [104, 101, 108, 108, 111]
+
