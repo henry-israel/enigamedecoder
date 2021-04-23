@@ -55,7 +55,8 @@ AlphabetTools:
 ##################################################################################################################################
 
 example usage:
-print(AlphabetTools.asciiTranslator("hello", mode="text")
+
+>> print(AlphabetTools.asciiTranslator("hello", mode="text")
 
 Out >> [104, 101, 108, 108, 111]
 
