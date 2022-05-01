@@ -1,207 +1,55 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 22 17:54:47 2021
+'''
+Created Sun May 1 22 2022
+@author: henry-israel
 
-@author: henry
-
-Decodes stuff for enigame
-"""
+Improved enigame decoder that more effecively uses classes
+'''
 import numpy as np
 from itertools import groupby
-from sympy.ntheory import factorint
 
-
-class ToolKit:    
-    def mixes(num):
-        try:
-            ele = int(num)
-            return (0,ele,'')
-        except ValueError:
-            return (1, num, '')
-        
-    def capsConverter(string_input):
-        '''
-        Converts string to capitals with no spaces
-    
-        Parameters
-        ----------
-        string_input : English string
-    
-        Returns
-        -------
-        string all caps no spaces
-    
-        '''
-        string_caps = string_input.upper()
-        string_no_space = string_caps.replace(' ', '')
-        return(string_no_space)
-
-class NumberTools:
+class TranslatorBase:
     '''
-    Class of functions that deal with numbers
+    Base class from which other translators will be built from
     '''
-    def primeFactors(n):
+
+    def __init__(self, inputstr: str, delimiter: str=''):
         '''
-        Returns prime factors of positive integer, n
-
-        Parameters
-        ----------
-        n : int, >0
-
-        Returns
-        -------
-        primfac : prime factors
-
+        str : inputstr  ->  input string, to be translated
+        str : delimiter -> delimter to separate words/numbers
         '''
-        return factorint(n)
-    
-    def convertfromBaseN(input_text, base=2):
-        '''
-        Converts text<->binary
+        self._inputstr=inputstr
+        self._delimiter=delimiter
 
-        Parameters
-        ----------
-        input_text : input string of base n numbers
-        mode = int->Converts from base n to text
+        #Special cases so we can get a couple of different versions of the input
+        #While inefficient it's probably useful to have these all defined here!
 
-        Returns
-        -------
-        Text string or binary arr
+        #Upper case version of regular string        
+        self._inputstr_allcaps=self._inputstr.upper()
+        #Version of normal string with no delimiter
+        self._input_no_delim=self._inputstr.replace(delimiter, '')
+        #Upper case version of normal string with no delimiter
+        self._input_no_delim_allcaps=self._input_no_delim.upper()
 
-        '''
-        vals = input_text.split()
-        translated = ''.join(chr(int(x, base)) for x in vals)
-        return translated
-    
-    def convertoBinary(input_text):
-        '''
-        Converts to base N
+        #Version of the input where it's an array
+        if delimiter=='':
+            self._input_asarray=list(self._inputstr_allcaps)
+        else:
+            self._input_asarray=[str_i for str_i in self._inputstr_allcaps.split(delimiter)]
+   
+        self._inputgrid=[]
 
-        Parameters
-        ----------
-        input_text : Any string
-        base : Alphabet base to translate to The default is 2.
+        self._ordered_asarray = sorted(self._input_asarray)
+        self._letterfreq={key: len(list(group)) for key, group in groupby(self._ordered_asarray)}
 
-        Returns
-        -------
-        String of letters
+        self._input_is_num=all([i.isdecimal() for i in self._input_asarray])
 
-        '''
-        byte_mode = bytearray(input_text, "utf-8")
-        translated = ''.join(bin(byte)[0]+bin(byte)[2:]+" " for byte in byte_mode)
-        return translated
-
-    def converttoHex(input_text):
-        '''
-        Converts string to hex
-
-        Parameters
-        ----------
-        input_text : Input string
-
-        Returns
-        -------
-        Hex translation
-
-        '''
-        translation = ''.join(hex(ord(let))[2:]+" " for let in input_text)
-        return translation
-
-    def NumtoLet(input_string, mode='let'):
-        '''
-        
-
-        Parameters
-        ----------
-        input_string : Input string of either all numbers or all letters
-        mode : TYPE: optional
-            Let-> converts letters to number
-            num->converts numbers to letters
-            DESCRIPTION. The default is 'let'.
-
-        Returns
-        -------
-        Translation
-
-        '''
-        let_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+        self._alphabet=["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
                "N","O","P","Q","R","S","T","U","V","W","X","Y","Z", " "]
-        num_arr = np.arange(1,27).astype(str)
-        num_arr = np.append(num_arr, ' ')
-        if mode == 'let':
-            let_dict = dict(zip(let_arr, num_arr))
-            mod_string = input_string.upper()
-            
-        if mode == "num":
-            let_dict = dict(zip(num_arr, let_arr))
-            mod_string = input_string.split()
-        translated = ''.join(let_dict[letter]+" " for letter in mod_string)
-        return translated
-    
-    def changeBase(input_num, init_base=10, conv_base=2):
-        '''
-        Converts to max base 9 (from up to base 36)
 
-        Parameters
-        ----------
-        input_num : Input number as a string! to be converted
-        init_base : int, starting base; optional
-            DESCRIPTION. The default is 10.
-        conv_base : int; base to be converted to, optional
-            DESCRIPTION. The default is 2. (max of 9!)
+        self._keyboardalphabet=["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A", "S",
+                           "D","F","G","H","J","K","L","Z","X","C","V","B","N","M", ' ']
 
-        Returns
-        -------
-        input num in base(conv_base)
-
-        '''
-        #convert number to base 10
-        first_conversion = int(input_num, init_base)
-        a=0
-        i=0
-        while first_conversion:
-            first_conversion, r = divmod(first_conversion, conv_base)
-            a += 10**i * r
-            i+=1
-        return a
-
-class AlphabetTools:
-    '''
-    Class of translation tools
-    '''
-    
-    def asciiTranslator(string_input, mode="ascii"):
-        '''
-        Translates ascii <-> English
-        
-        Parameters:
-            a string : an entry in ascii code or english
-            mode : text or ascii
-                text translates text -> ascii
-                ascii converts ascii -> text
-        ---
-        Outputs:
-        Text string translation
-        '''
-        if mode == "ascii":
-            translate = ''.join(chr(num) for num in string_input)
-        if mode == "text":
-            translate = [ord(c) for c in string_input]
-        return translate
-    
-    def morseTranslator(string_input, mode="morse"):
-        '''
-        Translates morse <-> english
-        
-        Parameters:
-            string_input : A string
-            
-            mode : 
-                "morse" -> translates morse to english
-                "text" -> translates english to morse
-        '''
-        #We can just         
-        morse_code_dict = { 'A':'.-', 'B':'-...', 
+        self._morse_code_dict={ 'A':'.-', 'B':'-...', 
                     'C':'-.-.', 'D':'-..', 'E':'.', 
                     'F':'..-.', 'G':'--.', 'H':'....', 
                     'I':'..', 'J':'.---', 'K':'-.-', 
@@ -216,151 +64,190 @@ class AlphabetTools:
                     '0':'-----', ', ':'--..--', '.':'.-.-.-', 
                     '?':'..--..', '/':'-..-.', '-':'-....-', 
                     '(':'-.--.', ')':'-.--.-', ' ' : '/'} 
-        if mode == "morse":
-            rev_dict = dict(zip(morse_code_dict.values(), morse_code_dict.keys()))
-            translated = ''.join(rev_dict[i] for i in string_input.split())
-        if mode == "text":
-            #we first have to translate to capitals
-            string_caps = string_input.upper()
-            translated = ''.join(morse_code_dict[i]+' ' for i in string_caps)
-        return translated
-    
-    
-    def turnIntoGrid(string_input):
+
+    @property
+    def get_input_all_caps(self):
+        return self._input_allcaps
+
+    @property
+    def get_input_no_delim(self):
+        return self._input_no_delim_allcaps
+
+    @property
+    def get_input_as_grid(self):
+        return self._inputgrid
+
+    @property
+    def get_char_freq(self):
+        return self._letterfreq
+
+    #Generic Stuff
+    def convert_to_grid(self):
         '''
-        converts string into grid        
-
-        Parameters
-        ----------
-        string : English string
-
-        Returns
-        -------
-        output as nxn grid where n=len(string without spaces)
-
+        Checks if you can convert input string to a grid
         '''
-        #Remove spaces and convert to caps        
-        string_caps = ToolKit.capsConverter(string_input)
-        string_len = len(string_caps)
-        len_root = np.sqrt(string_len)
-        if len_root != int(len_root):
-            print("could not convert to grid, not square")
-            grid = 0
+        sqrtarrsize=len(self._input_asarray)**0.5
+        if sqrtarrsize==int(sqrtarrsize):
+            print(f"Input has {len(self._input_asarray)} entries, can grid-ify!")
+            self._inputgrid=np.array(self._input_asarray).reshape(int(sqrtarrsize), int(sqrtarrsize))
+            return True
         else:
-            let_arr = [letter for letter in string_caps]
-            len_root = len_root.astype(int)
-            grid =  np.reshape(let_arr, (len_root, len_root))
-        return grid
+            print("Can't convert input to grid")
+            return False
+
+
+    #Numerical stuff
+    def get_prime_factors(self):
+        if self._input_is_num:
+            return factorint(int(self._inputstr))
+        else:
+            return 0
+
+    def convert_from_base_to_dec(self, base):
+        return [int(i, base) for i in self._input_asarray]
+
+    def convert_from_base_to_base(self, base1: int, base2: int):
+        #convert from decimal to new base 
+        if not self._input_is_num:
+            return 0
+        else:
+            dec_arr = self.convert_from_base_to_dec(base1)
+            return [self.change_dec_to_base(i) for i in dec_arr]
     
-    def reverseString(string_input):
-        '''
-        Capitalises and reverses string
+    def change_dec_to_base(self, instr, base):
+        innum=int(instr)
+        rem_arr=[]
+        while innum>0:
+            innum, rem=divmod(innum, base)
+            rem_arr.append(rem)
+        result=''.join(str(r) for r in rem_arr)
+        return result
 
-        Parameters
-        ----------
-        string_input : Any string
 
-        Returns
-        -------
-        String reversed with no spaces.
+    def convert_num_to_let(self, inarr, base=10):
+    #numerical array to array of letters!
+        if not self._input_is_num:
+            return 0
+        else:
+            num_arr=[self.change_dec_to_base(i, base) for i in inarr]
+            num_arr.remove('')
+            num_arr=np.array(num_arr[1:]).astype(int)
+            if max(num_arr)>=27 or min(num_arr)<=0:
+                return 0
+            else:
+                return [self._alphabet[i-1] for i in num_arr]
 
-        '''
-        string_caps = ToolKit.capsConverter(string_input)
-        return reversed(string_caps)
+    def convert_let_to_num(self):
+        nums=[str(i) for i in range(len(self._alphabet))]
+        letnumdict=dict(zip(self._alphabet,nums))
+        return [letnumdict[let_i] for let_i in self._input_asarray]
+
+    def convert_from_ascii(self, inarr):
+        if not self._input_is_num:
+            return 0
+        else:
+            if int(max(inarr))<=256:
+                return ''.join(chr(int(num)) for num in inarr)
+            else:
+                print("Max val greater than ascii!")
+                return 0
     
-    def alphabetiseString(string_input):
-        '''
-        Alphabetises string
+    def convert_to_ascii(self, instr):
+        return [ord(c) for c in instr]
 
-        Parameters
-        ----------
-        string_input : Input string
-        Returns
-        -------
-        Alphabetised string
-        '''
-        return ''.join(sorted(string_input))
+    #Alphabetical
+    def morse_to_eng(self):
+        if not set(self._input_asarray).issubset(set(self._morse_code_dict.values())):
+            print("Input not morse code")
+            return 0
+        else:
+            return ''.join(rev_dict[i] for i in string_input.split())
 
+    def convert_to_keyboardpos(self, inarr):
+        if not set(inarr).issubset(self._alphabet):
+            print("Input must just be letters")
+            return 0
+        else:
+            transdict=dict(zip(self._alphabet, self._keyboardalphabet))
+            return ''.join(transdict[i] for i in inarr)
     
-    def frequencyCount(array_input):
-        '''
-        Converts a string or array into dictionary of value frequency
+    def convert_from_keyboardpos(self, inarr):
+        if not set(inarr).issubset(self._alphabet):
+            print("Input must just be letters")
+            return 0
+        else:
+            transdict=dict(zip(self._keyboardalphabet, self._alphabet))
+            return ''.join(transdict[i] for i in inarr)
 
-        Parameters
-        ----------
-        array_input : Either an array or a string
 
-        Returns
-        -------
-        Dictionary of values
+    def get_max_digit(self):
+        digarr=[]
+        for str_i in self._input_asarray:
+            for i in list(str_i):
+                digarr.append(int(i))
+        return max(digarr)
 
-        '''
-        #convert string to array
-        if type(array_input) == str:
-            array_input = [letter for letter in array_input]
-        #Sort array
-        array_input.sort(key = ToolKit.mixes)
-        freq_dict = {key: len(list(group)) for key, group in groupby(array_input)}
-        return freq_dict  
-    
-    def convertToBraille(input_string, mode="text"):
-        '''
-        Converts string<->braille
+    def __call__(self, maxbase: int=10):
+        isgrid=self.convert_to_grid()
+        print(f"Examining {self._input_asarray}")
+        if isgrid:
+            print(f"input as grid is : ")
+            for row in self._inputgrid:
+                print(row)
+        print(f"Character frequency is : {self._letterfreq}")
 
-        Parameters
-        ----------
-        input_string : text string
-        mode : TYPE, braile=from braille; text=to braille
-            DESCRIPTION. The default is "text".
+        alphabet_trans=self.convert_num_to_let(self._input_asarray, 10)
 
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
+        dokb=False
+        if alphabet_trans!=0:
+            dokb=True
+            print(f"Alphabetic (num->letter) is {alphabet_trans}")
 
-        '''
-        input_string = input_string.replace(' ','')
-        print(input_string)
-        asciicodes = [' ','!','"','#','$','%','&','','(',')','*','+',',','-','.','/',
-                      '0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@',
-                      'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q',
-                      'r','s','t','u','v','w','x','y','z','[','\\',']','^','_']
-    
-        braille = ['⠀','⠮','⠐','⠼','⠫','⠩','⠯','⠄','⠷','⠾','⠡','⠬','⠠','⠤','⠨','⠌','⠴','⠂','⠆','⠒','⠲','⠢',
-                    '⠖','⠶','⠦','⠔','⠱','⠰','⠣','⠿','⠜','⠹','⠈','⠁','⠃','⠉','⠙','⠑','⠋','⠛','⠓','⠊','⠚','⠅',
-                    '⠇','⠍','⠝','⠕','⠏','⠟','⠗','⠎','⠞','⠥','⠧','⠺','⠭','⠽','⠵','⠪','⠳','⠻','⠘','⠸']
-        if mode=="text":
-            input_string.lower()
-            trans_dict = dict(zip(asciicodes, braille))
-        if mode=="braille":
-            trans_dict = dict(zip(braille, asciicodes))
-        print(trans_dict)
-        return ''.join(trans_dict[let] for let in input_string)
-    
-    def convertToKeyBoardPos(input_string, mode="keyboard"):
-        '''
-        Converts alphabet<->keyboard position
+            from_keyboard_trans=self.convert_to_keyboardpos(alphabet_trans)
+            to_keyboard_trans=self.convert_from_keyboardpos(alphabet_trans)
 
-        Parameters
-        ----------
-        input_string : String.
-        mode : keyboard->translates from keyboard
-            text->translates from english, optional
-            DESCRIPTION. The default is "keyboard".
+        elif set(self._input_asarray).issubset(self._alphabet):
+            dokb=True
+            from_keyboard_trans=self.convert_to_keyboardpos(self._input_asarray)
+            to_keyboard_trans=self.convert_from_keyboardpos(self._input_asarray)
+            self._input_asarray=self.convert_let_to_num()
+            self._input_is_num=True
+            self._inputstr=''.join(i+' ' for i in self._input_asarray)
+            print(f"Letter->Base 10 numerical value is : {self._input_asarray}")
+        
+        if dokb:
+            print(f"Alphabet->Keyboard pos : {to_keyboard_trans}")
+            print(f"Keyboard pos->Alphabet : {from_keyboard_trans}")
 
-        Returns
-        -------
-        Translation.
+        ascii_trans=[self.convert_from_ascii(i) for i in self._input_asarray]
+        if ascii_trans != 0:
+            print(f"This is '{ascii_trans}' in ascii")
 
-        '''
-        keyboard_alphabet=["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "A",
-                           "D","F","G","H","J","K","L","Z","X","C","V","B","N","M", ' ']
-        eng_alphabet=["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                      "N","O","P","Q","R","S","T","U","V","W","X","Y","Z", ' ']
-        caps_input = input_string.upper()
-        if mode=="keyboard":
-            trans_dict = dict(zip(keyboard_alphabet, eng_alphabet))
-        if mode=="text":
-            trans_dict = dict(zip(eng_alphabet, keyboard_alphabet))
-        return ''.join(trans_dict[i] for i in caps_input)
+        if self._input_is_num:
+            minbase=self.get_max_digit()+1
+            
+            print(f"Detected numerical result, converting from base {minbase}->{maxbase} to 10 and looking at ascii, binary etc.\n")
 
+
+            #Numeric stuff
+            for base_i in range(minbase, maxbase+1):
+                print("------------------------------------------------------")
+                base_conv=self.convert_from_base_to_dec(base_i)
+                ascii_trans_base=self.convert_from_ascii(base_conv)
+                alphabet_trans_base=self.convert_num_to_let(base_conv, base_i)
+
+                print(f"Now using base {base_i}")
+                print(f"{self._input_asarray} is {base_conv}")
+                if ascii_trans_base!=0:
+                    print(f"Ascii translation is : '{ascii_trans_base}'")
+                if alphabet_trans_base!=0:
+                    print(f"Alphabetic (num->letter) is {alphabet_trans_base}")
+                    from_keyboard_trans_base=self.convert_to_keyboardpos(alphabet_trans_base)
+                    to_keyboard_trans_base=self.convert_from_keyboardpos(alphabet_trans_base)
+                    print(f"If we go from keyboard->alphabet we get {from_keyboard_trans_base}")
+                    print(f"If we go from alphabet->keyboard we get {to_keyboard_trans_base}")
+                print("------------------------------------------------------\n")
+
+
+x=TranslatorBase("HELLODARKNESSMYOLDFRIEND",'')
+x()
