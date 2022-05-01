@@ -129,9 +129,8 @@ class TranslatorBase:
         if not self._input_is_num:
             return 0
         else:
-            num_arr=[self.change_dec_to_base(i, base) for i in inarr]
-            num_arr.remove('')
-            num_arr=np.array(num_arr[1:]).astype(int)
+            num_arr=[int(i) for i in inarr]
+            print(num_arr, "sdsdfs")
             if max(num_arr)>=27 or min(num_arr)<=0:
                 return 0
             else:
@@ -161,7 +160,10 @@ class TranslatorBase:
             print("Input not morse code")
             return 0
         else:
-            return ''.join(rev_dict[i] for i in string_input.split())
+            #I'm an eegit
+            revdict=dict(zip(self._morse_code_dict.values(),self._morse_code_dict.keys()))
+            return ''.join(revdict[i] for i in self._inputstr.split())
+
 
     def convert_to_keyboardpos(self, inarr):
         if not set(inarr).issubset(self._alphabet):
@@ -188,6 +190,14 @@ class TranslatorBase:
         return max(digarr)
 
     def __call__(self, maxbase: int=10):
+
+        morse_trans=self.morse_to_eng()
+        if morse_trans!=0:
+            print("It's in morse!")
+            print(f"Translates to {morse_trans}")
+            new_str=''.join(i for i in morse_trans)
+            self.__init__(new_str, '')
+
         isgrid=self.convert_to_grid()
         print(f"Examining {self._input_asarray}")
         if isgrid:
@@ -233,13 +243,9 @@ class TranslatorBase:
             for base_i in range(minbase, maxbase+1):
                 print("------------------------------------------------------")
                 base_conv=self.convert_from_base_to_dec(base_i)
-                ascii_trans_base=self.convert_from_ascii(base_conv)
                 alphabet_trans_base=self.convert_num_to_let(base_conv, base_i)
-
                 print(f"Now using base {base_i}")
                 print(f"{self._input_asarray} is {base_conv}")
-                if ascii_trans_base!=0:
-                    print(f"Ascii translation is : '{ascii_trans_base}'")
                 if alphabet_trans_base!=0:
                     print(f"Alphabetic (num->letter) is {alphabet_trans_base}")
                     from_keyboard_trans_base=self.convert_to_keyboardpos(alphabet_trans_base)
@@ -249,5 +255,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("HELLODARKNESSMYOLDFRIEND",'')
+    x=TranslatorBase("... --- ...",' ')
     x()
