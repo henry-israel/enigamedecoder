@@ -130,7 +130,6 @@ class TranslatorBase:
             return 0
         else:
             num_arr=[int(i) for i in inarr]
-            print(num_arr, "sdsdfs")
             if max(num_arr)>=27 or min(num_arr)<=0:
                 return 0
             else:
