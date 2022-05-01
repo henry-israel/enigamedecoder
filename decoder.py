@@ -223,6 +223,7 @@ class TranslatorBase:
             self._input_is_num=True
             self._inputstr=''.join(i+' ' for i in self._input_asarray)
             print(f"Letter->Base 10 numerical value is : {self._input_asarray}")
+            print(f"This sums to {np.sum(np.array(self._input_asarray).astype(int))}\n")
         
         if dokb:
             print(f"Alphabet->Keyboard pos : {to_keyboard_trans}")
@@ -254,5 +255,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("... --- ...",' ')
+    x=TranslatorBase("ABCDEFGHI",'')
     x()
