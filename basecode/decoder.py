@@ -248,6 +248,6 @@ class TranslatorBase:
                     print(f"If we go from alphabet->keyboard we get {to_keyboard_trans_base}")
                 print("------------------------------------------------------\n")
 
-
-x=TranslatorBase("HELLODARKNESSMYOLDFRIEND",'')
-x()
+if __name__=='__main__':
+    x=TranslatorBase("HELLODARKNESSMYOLDFRIEND",'')
+    x()
