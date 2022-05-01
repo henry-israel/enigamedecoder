@@ -136,7 +136,7 @@ class TranslatorBase:
                 return [self._alphabet[i-1] for i in num_arr]
 
     def convert_let_to_num(self):
-        nums=[str(i) for i in range(len(self._alphabet))]
+        nums=[str(i) for i in range(1,len(self._alphabet)+1)]
         letnumdict=dict(zip(self._alphabet,nums))
         return [letnumdict[let_i] for let_i in self._input_asarray]
 
