@@ -141,7 +141,6 @@ class TranslatorBase:
         return [letnumdict[let_i] for let_i in self._input_asarray]
 
     def convert_from_ascii(self, instr, base=10):
-        print(int(instr, base))
         if not self._input_is_num or base>10:
             return ' '
         else:
