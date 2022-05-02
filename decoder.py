@@ -179,10 +179,12 @@ class TranslatorBase:
 
 
     def translate_from_hex(self, instr):
-        if set(instr).issubset(string.hexdigits):
-            return bytearray.fromhex(instr).decode()
-        else:
-            return 0
+        outhex=0
+        try:
+            outhex=bytearray.fromhex(instr).decode()
+        except UnicodeDecodeError:
+            print("Input is not hex")
+        return outhex
 
     def get_max_digit(self):
         digarr=[]
@@ -191,7 +193,7 @@ class TranslatorBase:
                 digarr.append(int(i))
         return max(digarr)
 
-    def __call__(self, maxbase: int=10):
+    def __call__(self, maxbase: int=10, ishex=False):
 
         morse_trans=self.morse_to_eng()
         if morse_trans!=0:
@@ -200,12 +202,12 @@ class TranslatorBase:
             new_str=''.join(i for i in morse_trans)
             self.__init__(new_str, '')
 
-        
-        hex_trans=self.translate_from_hex(self._input_no_delim)
-        if hex_trans!=0:
-            print("Input is in hex!")
-            print(f"Input translates to {hex_trans}")
-            self.__init__(hex_trans,'')
+        if ishex:
+            hex_trans=self.translate_from_hex(self._input_no_delim)
+            if hex_trans!=0:
+                print("Input is in hex!")
+                print(f"Input translates to {hex_trans}")
+                self.__init__(hex_trans,'')
 
         isgrid=self.convert_to_grid()
         print(f"Examining {self._input_asarray}")
@@ -266,5 +268,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("6D 72 20 77 6F 72 6C 64 77 69 64 65",' ')
-    x(16)
+    x=TranslatorBase("hello",'')
+    x(10)
