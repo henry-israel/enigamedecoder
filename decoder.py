@@ -256,7 +256,10 @@ class TranslatorBase:
 
                 if base_i<=10:
                     ascii_trans=[self.convert_from_ascii(i, base_i) for i in self._input_asarray]
-                    print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
+                    try:
+                        print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
+                    except:
+                        print("Couldn't get your ascii translation")
                 print(f"Now using base {base_i}")
                 print(f"{self._input_asarray} is {base_conv}")
                 if alphabet_trans_base!=0:
@@ -268,5 +271,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("hello",'')
+    x=TranslatorBase("01101101 01110010 00100000 01110111 01101111 01110010 01101100 01100100 01110111 01101001 01100100 01100101",' ')
     x(10)
