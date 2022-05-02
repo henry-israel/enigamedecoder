@@ -181,7 +181,7 @@ class TranslatorBase:
     def translate_from_hex(self, instr):
         outhex=0
         try:
-            outhex=bytearray.fromhex(instr).decode()
+            outhex=bytearray.fromhex(instr).decode('utf-8')
         except UnicodeDecodeError:
             print("Input is not hex")
         return outhex
