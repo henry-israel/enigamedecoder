@@ -64,7 +64,7 @@ class TranslatorBase:
                     '0':'-----', ', ':'--..--', '.':'.-.-.-', 
                     '?':'..--..', '/':'-..-.', '-':'-....-', 
                     '(':'-.--.', ')':'-.--.-', ' ' : '/'} 
-
+        
     @property
     def get_input_all_caps(self):
         return self._input_allcaps
@@ -140,15 +140,13 @@ class TranslatorBase:
         letnumdict=dict(zip(self._alphabet,nums))
         return [letnumdict[let_i] for let_i in self._input_asarray]
 
-    def convert_from_ascii(self, inarr):
+    def convert_from_ascii(self, instr, base=10):
+        print(int(instr, base))
         if not self._input_is_num:
             return 0
         else:
-            if int(max(inarr))<=256:
-                return ''.join(chr(int(num)) for num in inarr)
-            else:
-                print("Max val greater than ascii!")
-                return 0
+            return str(chr(int(instr, base)))
+
     
     def convert_to_ascii(self, instr):
         return [ord(c) for c in instr]
@@ -231,7 +229,7 @@ class TranslatorBase:
 
         ascii_trans=[self.convert_from_ascii(i) for i in self._input_asarray]
         if ascii_trans != 0:
-            print(f"This is '{ascii_trans}' in ascii")
+            print(f"This is '{''.join(i for i in ascii_trans)}' in ascii (assuming base 10)")
 
         if self._input_is_num:
             minbase=self.get_max_digit()+1
@@ -244,6 +242,9 @@ class TranslatorBase:
                 print("------------------------------------------------------")
                 base_conv=self.convert_from_base_to_dec(base_i)
                 alphabet_trans_base=self.convert_num_to_let(base_conv, base_i)
+
+                ascii_trans=[self.convert_from_ascii(i, base_i) for i in self._input_asarray]
+                print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
                 print(f"Now using base {base_i}")
                 print(f"{self._input_asarray} is {base_conv}")
                 if alphabet_trans_base!=0:
@@ -255,5 +256,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("ABCDEFGHI",'')
+    x=TranslatorBase("01101000 01101001",' ')
     x()
