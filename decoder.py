@@ -6,7 +6,7 @@ Improved enigame decoder that more effecively uses classes
 '''
 import numpy as np
 from itertools import groupby
-
+import string
 class TranslatorBase:
     '''
     Base class from which other translators will be built from
@@ -142,8 +142,8 @@ class TranslatorBase:
 
     def convert_from_ascii(self, instr, base=10):
         print(int(instr, base))
-        if not self._input_is_num:
-            return 0
+        if not self._input_is_num or base>10:
+            return ' '
         else:
             return str(chr(int(instr, base)))
 
@@ -179,6 +179,12 @@ class TranslatorBase:
             return ''.join(transdict[i] for i in inarr)
 
 
+    def translate_from_hex(self, instr):
+        if set(instr).issubset(string.hexdigits):
+            return bytearray.fromhex(instr).decode()
+        else:
+            return 0
+
     def get_max_digit(self):
         digarr=[]
         for str_i in self._input_asarray:
@@ -194,6 +200,13 @@ class TranslatorBase:
             print(f"Translates to {morse_trans}")
             new_str=''.join(i for i in morse_trans)
             self.__init__(new_str, '')
+
+        
+        hex_trans=self.translate_from_hex(self._input_no_delim)
+        if hex_trans!=0:
+            print("Input is in hex!")
+            print(f"Input translates to {hex_trans}")
+            self.__init__(hex_trans,'')
 
         isgrid=self.convert_to_grid()
         print(f"Examining {self._input_asarray}")
@@ -227,9 +240,6 @@ class TranslatorBase:
             print(f"Alphabet->Keyboard pos : {to_keyboard_trans}")
             print(f"Keyboard pos->Alphabet : {from_keyboard_trans}")
 
-        ascii_trans=[self.convert_from_ascii(i) for i in self._input_asarray]
-        if ascii_trans != 0:
-            print(f"This is '{''.join(i for i in ascii_trans)}' in ascii (assuming base 10)")
 
         if self._input_is_num:
             minbase=self.get_max_digit()+1
@@ -243,8 +253,9 @@ class TranslatorBase:
                 base_conv=self.convert_from_base_to_dec(base_i)
                 alphabet_trans_base=self.convert_num_to_let(base_conv, base_i)
 
-                ascii_trans=[self.convert_from_ascii(i, base_i) for i in self._input_asarray]
-                print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
+                if base_i<=10:
+                    ascii_trans=[self.convert_from_ascii(i, base_i) for i in self._input_asarray]
+                    print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
                 print(f"Now using base {base_i}")
                 print(f"{self._input_asarray} is {base_conv}")
                 if alphabet_trans_base!=0:
@@ -256,5 +267,5 @@ class TranslatorBase:
                 print("------------------------------------------------------\n")
 
 if __name__=='__main__':
-    x=TranslatorBase("01101000 01101001",' ')
-    x()
+    x=TranslatorBase("6D 72 20 77 6F 72 6C 64 77 69 64 65",' ')
+    x(16)
