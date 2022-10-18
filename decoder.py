@@ -6,7 +6,7 @@ Improved enigame decoder that more effecively uses classes
 '''
 import numpy as np
 from itertools import groupby
-
+import string
 class TranslatorBase:
     '''
     Base class from which other translators will be built from
@@ -64,7 +64,7 @@ class TranslatorBase:
                     '0':'-----', ', ':'--..--', '.':'.-.-.-', 
                     '?':'..--..', '/':'-..-.', '-':'-....-', 
                     '(':'-.--.', ')':'-.--.-', ' ' : '/'} 
-
+        
     @property
     def get_input_all_caps(self):
         return self._input_allcaps
@@ -129,28 +129,23 @@ class TranslatorBase:
         if not self._input_is_num:
             return 0
         else:
-            num_arr=[self.change_dec_to_base(i, base) for i in inarr]
-            num_arr.remove('')
-            num_arr=np.array(num_arr[1:]).astype(int)
+            num_arr=[int(i) for i in inarr]
             if max(num_arr)>=27 or min(num_arr)<=0:
                 return 0
             else:
                 return [self._alphabet[i-1] for i in num_arr]
 
     def convert_let_to_num(self):
-        nums=[str(i) for i in range(len(self._alphabet))]
+        nums=[str(i) for i in range(1,len(self._alphabet)+1)]
         letnumdict=dict(zip(self._alphabet,nums))
         return [letnumdict[let_i] for let_i in self._input_asarray]
 
-    def convert_from_ascii(self, inarr):
-        if not self._input_is_num:
-            return 0
+    def convert_from_ascii(self, instr, base=10):
+        if not self._input_is_num or base>10:
+            return ' '
         else:
-            if int(max(inarr))<=256:
-                return ''.join(chr(int(num)) for num in inarr)
-            else:
-                print("Max val greater than ascii!")
-                return 0
+            return str(chr(int(instr, base)))
+
     
     def convert_to_ascii(self, instr):
         return [ord(c) for c in instr]
@@ -161,7 +156,10 @@ class TranslatorBase:
             print("Input not morse code")
             return 0
         else:
-            return ''.join(rev_dict[i] for i in string_input.split())
+            #I'm an eegit
+            revdict=dict(zip(self._morse_code_dict.values(),self._morse_code_dict.keys()))
+            return ''.join(revdict[i] for i in self._inputstr.split())
+
 
     def convert_to_keyboardpos(self, inarr):
         if not set(inarr).issubset(self._alphabet):
@@ -180,6 +178,14 @@ class TranslatorBase:
             return ''.join(transdict[i] for i in inarr)
 
 
+    def translate_from_hex(self, instr):
+        outhex=0
+        try:
+            outhex=bytearray.fromhex(instr).decode('utf-8')
+        except UnicodeDecodeError:
+            print("Input is not hex")
+        return outhex
+
     def get_max_digit(self):
         digarr=[]
         for str_i in self._input_asarray:
@@ -187,7 +193,22 @@ class TranslatorBase:
                 digarr.append(int(i))
         return max(digarr)
 
-    def __call__(self, maxbase: int=10):
+    def __call__(self, maxbase: int=10, ishex=False):
+
+        morse_trans=self.morse_to_eng()
+        if morse_trans!=0:
+            print("It's in morse!")
+            print(f"Translates to {morse_trans}")
+            new_str=''.join(i for i in morse_trans)
+            self.__init__(new_str, '')
+
+        if ishex:
+            hex_trans=self.translate_from_hex(self._input_no_delim)
+            if hex_trans!=0:
+                print("Input is in hex!")
+                print(f"Input translates to {hex_trans}")
+                self.__init__(hex_trans,'')
+
         isgrid=self.convert_to_grid()
         print(f"Examining {self._input_asarray}")
         if isgrid:
@@ -214,14 +235,12 @@ class TranslatorBase:
             self._input_is_num=True
             self._inputstr=''.join(i+' ' for i in self._input_asarray)
             print(f"Letter->Base 10 numerical value is : {self._input_asarray}")
+            print(f"This sums to {np.sum(np.array(self._input_asarray).astype(int))}\n")
         
         if dokb:
             print(f"Alphabet->Keyboard pos : {to_keyboard_trans}")
             print(f"Keyboard pos->Alphabet : {from_keyboard_trans}")
 
-        ascii_trans=[self.convert_from_ascii(i) for i in self._input_asarray]
-        if ascii_trans != 0:
-            print(f"This is '{ascii_trans}' in ascii")
 
         if self._input_is_num:
             minbase=self.get_max_digit()+1
@@ -233,13 +252,16 @@ class TranslatorBase:
             for base_i in range(minbase, maxbase+1):
                 print("------------------------------------------------------")
                 base_conv=self.convert_from_base_to_dec(base_i)
-                ascii_trans_base=self.convert_from_ascii(base_conv)
                 alphabet_trans_base=self.convert_num_to_let(base_conv, base_i)
 
+                if base_i<=10:
+                    ascii_trans=[self.convert_from_ascii(i, base_i) for i in self._input_asarray]
+                    try:
+                        print(f"Ascii translation is '{''.join(i for i in ascii_trans)}' in base {base_i}")
+                    except:
+                        print("Couldn't get your ascii translation")
                 print(f"Now using base {base_i}")
                 print(f"{self._input_asarray} is {base_conv}")
-                if ascii_trans_base!=0:
-                    print(f"Ascii translation is : '{ascii_trans_base}'")
                 if alphabet_trans_base!=0:
                     print(f"Alphabetic (num->letter) is {alphabet_trans_base}")
                     from_keyboard_trans_base=self.convert_to_keyboardpos(alphabet_trans_base)
@@ -248,6 +270,6 @@ class TranslatorBase:
                     print(f"If we go from alphabet->keyboard we get {to_keyboard_trans_base}")
                 print("------------------------------------------------------\n")
 
-
-x=TranslatorBase("HELLODARKNESSMYOLDFRIEND",'')
-x()
+if __name__=='__main__':
+    x=TranslatorBase("01101101 01110010 00100000 01110111 01101111 01110010 01101100 01100100 01110111 01101001 01100100 01100101",' ')
+    x(10)
